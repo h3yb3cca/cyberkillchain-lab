@@ -1,5 +1,9 @@
+# Criar lista de palavras (Flags encontradas)
+nano seeds.txt
+
 # Criar a lista de palavras no Kali
-mkdir -p ~/lab-wordlist && cd ~/lab-wordlist nano seeds.txt
+mkdir -p ~/lab-wordlist
+nano ~/lab-wordlist/custom_wordlist.txt
 
 # Criar o executável em Python
 nano wordlist_gen.py
