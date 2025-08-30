@@ -8,6 +8,10 @@ nmap -p- -sV -T4 labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net
 # -sV Ativa service/version detection: O Nmap tenta identificar o serviço que está rodando em cada porta aberta.
 # -T4 Define a agressividade/velocidade do scan. Vai de T0 (bem lento) até T5 (muito agressivo). T4 é um bom meio termo: rápido, mas sem ser tão ruidoso como T5.
 
+# Fingerprinting do site
+whatweb https://labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net
+# O WhatWeb retorna informações como CMS, linguagens, frameworks, bibliotecas JS, servidor web, versão do PHP etc.
+
 # Cabeçalhos HTTP
 curl -I -L labunifecaf-gjc6evbudff9fnh5.westus3-01.azurewebsites.net
 # curl É a ferramenta de linha de comando para fazer requisições HTTP, HTTPS, FTP etc. Aqui usamos para “falar” com o servidor web.
